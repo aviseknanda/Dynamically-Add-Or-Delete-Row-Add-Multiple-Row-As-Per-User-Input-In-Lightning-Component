@@ -1,0 +1,122 @@
+<aura:component controller="Sync_Order_Line_Items" Implements="flexipage:availableForRecordHome" access="global"
+    extensible="true">
+    <aura:attribute name="orderLineItemList" type="Order_Line_Item__c[]" />
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="showInsertPanelRows" type="Boolean" default="false" />
+    <aura:attribute name="showSelection" type="Boolean" default="false" />
+    <aura:attribute name="packageNameMap" type="Map" />
+    <aura:attribute name="spinner" type="Boolean" default="false" />
+
+    <!-- Script -->
+    <ltng:require styles="{!$Resource.SweetAlertLibCSS}"
+        scripts="{!join(',', $Resource.SweetAlertJS, $Resource.SweetAlertLibJS)}" afterScriptsLoaded="{!c.doInit}" />
+
+    <!--loading spinner start-->
+    <aura:if isTrue="{!v.spinner }">
+        <lightning:spinner aura:id="mySpinner" class="slds-is-fixed" alternativeText="Processing.." title="Processing.."
+            variant="brand" size="large" />
+    </aura:if>
+    <!-- Loading spinner end-->
+    <div class="slds-m-around--xx-large">
+        <!-- Multiple row addition based on number of line item and package name -->
+        <div class="c-container">
+            <lightning:recordEditForm objectApiName="Order_Line_Item__c">
+                <!-- the messages component is for error messages -->
+                <lightning:messages />
+                <lightning:layout>
+                    <lightning:layoutItem padding="around-small">
+                        <div class="custom-box"><label for="How_Many__c">How many orders?</label></div>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem padding="around-small">
+                        <div class="custom-box">
+                            <lightning:inputField fieldName="How_Many__c" aura:id="howManyOli" variant="label-hidden" />
+                        </div>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem padding="around-small">
+                        <div class="custom-box">
+                            <lightning:button variant="brand" label="Add Rows" title="Brand action"
+                                onclick="{!c.onChangeAddMultipleRow}" />
+                        </div>
+                    </lightning:layoutItem>
+                </lightning:layout>
+            </lightning:recordEditForm>
+        </div>
+        <aura:if isTrue="{!(v.showInsertPanelRows)}">
+            <div class="slds-float_right slds-p-bottom_small">
+                <h1 class="slds-page-header__title">Add Row
+                    <lightning:buttonIcon iconName="utility:add" size="large" variant="bare" alternativeText="Add"
+                        onclick="{!c.addRow}" />
+                </h1>
+            </div>
+            <div class="container-fluid">
+                <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                    <thead>
+                        <tr class="slds-text-title_caps">
+                            <th scope="col">
+                                <div class="slds-truncate">#</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Order Line Item Name">Order Line Item Name</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Start Date">Start Date</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="End Date">End Date</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Order ID">Order ID</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate" title="Action">Action</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.orderLineItemList}" var="oli" indexVar="index">
+                            <tr>
+                                <td>
+                                    {!index + 1}
+                                </td>
+                                <td>
+                                    <lightning:select aura:id="lineItemName" value="{!oli.Name}" name="lineItemName"
+                                        label="Line item Name" required="true">
+                                        <option value="">--None--</option>
+                                        <aura:iteration items="{!v.packageNameMap}" var="oli" indexVar="key">
+                                            <option text="{!oli.value}" value="{!oli.key}"
+                                                selected="{!oli.key==v.Order_Line_Item__c.Select_the_Package_Name__c}" />
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </td>
+                                <td>
+                                    <lightning:input name="oliStartDate" type="date" label="Start Date"
+                                        value="{!oli.Start_Date__c}" />
+                                </td>
+                                <td>
+                                    <lightning:input name="oliEndDate" type="date" label="End Date"
+                                        value="{!oli.End_Date__c}" />
+                                </td>
+                                <td>
+                                    <lightning:input aura:id="lineItemId" name="oliRodeoID" type="text" required="true"
+                                        maxlength="50" label="Order ID" value="{!oli.Line_Item_ID__c}" />
+                                </td>
+                                <td>
+                                    <a onclick="{!c.removeRow}" data-record="{!index}">
+                                        <lightning:icon iconName="utility:delete" size="small"
+                                            alternativeText="Delete" />
+                                        <span class="slds-assistive-text">Delete</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+                <div class="slds-align_absolute-center slds-p-top_small">
+                    <lightning:button variant="brand" label="Save" title="Brand action" onclick="{!c.save}" />
+                    <lightning:button variant="brand" label="Cancel" title="Brand action"
+                        onclick="{!c.onCancelInsert}" />
+                </div>
+            </div>
+        </aura:if>
+    </div>
+</aura:component>
